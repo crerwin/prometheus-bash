@@ -4,6 +4,6 @@ After=network-online.target
 [Service]
 User=prometheus
 Restart=on-failure
-ExecStart=/opt/alertmanager/alertmanager --config.file=/opt/alertmanager/alertmanager.yml
+ExecStart=/opt/alertmanager/alertmanager --config.file=/opt/alertmanager/alertmanager.yml --cluster.peer=[am1]:9094 --cluster.peer=[am2]:9094
 [Install]
 WantedBy=multi-user.target

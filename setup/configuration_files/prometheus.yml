@@ -14,3 +14,10 @@ scrape_configs:
     file_sd_configs:
       - files:
         - dcostargets.json
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager1:9093
+      - alertmanager2:9093
