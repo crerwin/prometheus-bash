@@ -1,0 +1,19 @@
+groups:
+  - name: DC/OS
+    rules:
+    - alert: CPUUsage
+      expr: avg_over_time(cpu_total[5m]) > 75
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        description: "{{$labels.instance}} CPU usage is above 75%.  Current value: {{ $value }}"
+        summary: "{{$labels.instance}}: High CPU usage detected"
+    - alert: MemoryUsage
+      expr: 1 - ((avg_over_time(memory_free[30m]) + avg_over_time(memory_cached[30m]) + avg_over_time(memory_buffers[30m])) / avg_over_time(memory_total[30m])) > .75
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        description: "{{$labels.instance}} Memory usage is above 75%.  Current value: {{ $value }}"
+        summary: "{{$labels.instnace}}: High memory usage detected"
