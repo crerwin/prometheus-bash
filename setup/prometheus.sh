@@ -22,121 +22,13 @@ sudo tar xvfz grafana-5.1.4.linux-x64.tar.gz -C /opt/grafana --strip-components=
 sudo chown -R prometheus:prometheus /var/prometheus /opt/prometheus /opt/alertmanager
 sudo chown -R grafana:grafana /opt/grafana
 
-sudo tee /etc/systemd/system/prometheus.service <<- EOF
-[Unit]
-Description=Prometheus Server
-Documentation=https://prometheus.io/docs/introduction/overview/
-After=network-online.target
-[Service]
-User=prometheus
-Restart=on-failure
-ExecStart=/opt/prometheus/prometheus --config.file=/opt/prometheus/prometheus.yml --storage.tsdb.path=/var/prometheus
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo tee /etc/systemd/system/alertmanager.service <<- EOF
-[Unit]
-Description=AlertManager
-After=network-online.target
-[Service]
-User=prometheus
-Restart=on-failure
-ExecStart=/opt/alertmanager/alertmanager --config.file=/opt/alertmanager/alertmanager.yml
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo tee /etc/systemd/system/grafana.service <<- EOF
-[Unit]
-Description=Grafana Server
-After=network-online.target
-[Service]
-User=grafana
-Restart=on-failure
-WorkingDirectory=/opt/grafana
-ExecStart=/opt/grafana/bin/grafana-server web
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo tee /opt/prometheus/prometheus.yml <<- EOF
-global:
-  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
-
-rule_files:
-  - "prometheusalerts.yml"
-  - "dcosalerts.yml"
-
-scrape_configs:
-  - job_name: 'prometheus'
-    static_configs:
-    - targets: ['localhost:9090']
-  - job_name: 'dcos'
-    file_sd_configs:
-      - files:
-        - dcostargets.json
-EOF
-
-sudo tee /opt/alertmanager/alertmanager.yml <<- EOF
-global:
-  resolve_timeout: 5m
-
-route:
-  group_by: ['alertname']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 1h
-  receiver: 'web.hook'
-receivers:
-- name: 'web.hook'
-  webhook_configs:
-  - url: 'http://127.0.0.1:5001/'
-inhibit_rules:
-  - source_match:
-      severity: 'critical'
-    target_match:
-      severity: 'warning'
-    equal: ['alertname', 'dev', 'instance']
-EOF
-
-sudo tee /opt/prometheus/dcostargets.json <<- EOF
-[
-  {
-    "targets": ["masterips:61091", "nodeips:61091"],
-    "labels": {
-      "job": "dcos-metrics"
-    }
-  },
-  {
-    "targets": [ "masterips:9105", "nodeips:9105" ],
-    "labels": {
-      "job": "mesos-metrics"
-    }
-  },
-  {
-    "targets": [ "masterips:9088" ],
-    "labels": {
-      "job": "marathon-metrics"
-    }
-  }
-]
-EOF
-
-sudo tee /opt/prometheus/prometheusalerts.yml <<- EOF
-groups:
- - name: Prometheus
-   rules:
-   - alert: TargetDown
-     expr: avg(up) BY (job) < 1
-     for: 1m
-     labels:
-       severity: warning
-     annotations:
-       description: '{{$labels.job}} target down'
-       summary: 'target down'
-EOF
+sudo cp /tmp/setup/configuration_files/prometheus.service /etc/systemd/system/prometheus.service
+sudo cp /tmp/setup/configuration_files/alertmanager.service /etc/systemd/system/alertmanager.service
+sudo cp /tmp/setup/configuration_files/grafana.service /etc/systemd/system/grafana.service
+sudo cp /tmp/setup/configuration_files/prometheus.yml /opt/prometheus/prometheus.yml
+sudo cp /tmp/setup/configuration_files/prometheusalerts.yml /opt/prometheus/prometheusalerts.yml
+sudo cp /tmp/setup/configuration_files/dcostargets.json /opt/prometheus/dcostargets.json
+sudo cp /tmp/setup/configuration_files/alertmanager.yml /opt/alertmanager/alertmanager.yml
 sudo touch /opt/prometheus/dcosalerts.yml
 
 sudo systemctl daemon-reload
