@@ -1,0 +1,9 @@
+[Unit]
+Description=AlertManager
+After=network-online.target
+[Service]
+User=prometheus
+Restart=on-failure
+ExecStart=/opt/alertmanager/alertmanager --config.file=/opt/alertmanager/alertmanager.yml
+[Install]
+WantedBy=multi-user.target

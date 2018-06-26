@@ -1,0 +1,20 @@
+[
+  {
+    "targets": ["masterips:61091", "nodeips:61091"],
+    "labels": {
+      "job": "dcos-metrics"
+    }
+  },
+  {
+    "targets": [ "masterips:9105", "nodeips:9105" ],
+    "labels": {
+      "job": "mesos-metrics"
+    }
+  },
+  {
+    "targets": [ "masterips:9088" ],
+    "labels": {
+      "job": "marathon-metrics"
+    }
+  }
+]

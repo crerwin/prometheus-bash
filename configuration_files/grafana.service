@@ -1,0 +1,10 @@
+[Unit]
+Description=Grafana Server
+After=network-online.target
+[Service]
+User=grafana
+Restart=on-failure
+WorkingDirectory=/opt/grafana
+ExecStart=/opt/grafana/bin/grafana-server web
+[Install]
+WantedBy=multi-user.target
